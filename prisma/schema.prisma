@@ -17,10 +17,12 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(user)
-  create_at DateTime @default(now())  
+  create_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  
+
   customer Customer?
+
+  @@map("user")
 }
 
 enum CarStatus {
@@ -36,17 +38,19 @@ model Car {
   color         String
   mileage       Int
   price_per_day Decimal   @db.Decimal(10, 2)
-  deposit       Decimal    @db.Decimal(10, 2)
+  deposit       Decimal   @db.Decimal(10, 2)
   car_status    CarStatus @default(AVAILABLE)
   car_image     String?
   detail        String?
-  create_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  create_at     DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
   type_id Int
   type    Car_type @relation(fields: [type_id], references: [type_id])
 
   rentals Rental[]
+
+  @@map("car")
 }
 
 model Car_type {
@@ -54,6 +58,8 @@ model Car_type {
   type_name String
 
   cars Car[]
+
+  @@map("car_type")
 }
 
 model Customer {
@@ -61,13 +67,16 @@ model Customer {
   cust_fname  String
   cust_lname  String
   cust_tel    String   @db.VarChar(20)
-  license_num String @db.VarChar(50)
+  license_num String   @db.VarChar(50)
   create_at   DateTime @default(now())
-  updated_at DateTime @updatedAt
+  updated_at  DateTime @updatedAt
 
-  user_id Int      @unique
-  user    User     @relation(fields: [user_id], references: [user_id])
+  user_id Int  @unique
+  user    User @relation(fields: [user_id], references: [user_id])
+
   rentals Rental[]
+
+  @@map("customer")
 }
 
 enum payChannel {
@@ -94,6 +103,8 @@ model Payment {
   pay_date    DateTime   @default(now())
 
   rental Rental @relation(fields: [rent_id], references: [rent_id])
+
+  @@map("payment")
 }
 
 enum rentStatus {
@@ -106,8 +117,8 @@ enum rentStatus {
 model Rental {
   rent_id Int @id @default(autoincrement())
 
-  plate_id  String
-  cust_id Int
+  plate_id String
+  cust_id  Int
 
   rent_date          DateTime
   return_due_date    DateTime
@@ -115,13 +126,15 @@ model Rental {
   pickup_place       String
   deposit            Decimal    @db.Decimal(10, 2)
   total_price        Decimal    @db.Decimal(10, 2)
-  fine               Int      @default(0)
+  fine               Int        @default(0)
   rent_status        rentStatus @default(pending)
   create_at          DateTime   @default(now())
-  updated_at         DateTime @updatedAt
+  updated_at         DateTime   @updatedAt
 
   car      Car      @relation(fields: [plate_id], references: [plate_id])
   customer Customer @relation(fields: [cust_id], references: [cust_id])
 
   payment Payment[]
+
+  @@map("rental")
 }
