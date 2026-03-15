@@ -1,7 +1,5 @@
 const prisma = require('../config/prisma')
 
-const prisma = require('../config/prisma')
-
 exports.create = async (req,res) => {
     try {
 
