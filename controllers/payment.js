@@ -77,15 +77,7 @@ exports.create = async (req, res) => {
             }
         })
 
-        await prisma.car.update({
-            where:{
-                plate_id:rental.plate_id
-            },
-            data:{
-                car_status:"RENTED"
-            }
-        })
-
+        
         res.json({
             message:"Payment successful",
             data:payment

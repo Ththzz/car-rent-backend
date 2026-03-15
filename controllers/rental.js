@@ -1,5 +1,7 @@
 const prisma = require('../config/prisma')
 
+const prisma = require('../config/prisma')
+
 exports.create = async (req,res) => {
     try {
 
@@ -24,39 +26,57 @@ exports.create = async (req,res) => {
             })
         }
 
-        if(car.car_status !== "AVAILABLE"){
-        return res.status(400).json({
-            message:"Car is not available"
-        })
-        }
-
-        const customer = await prisma.customer.findUnique({
-        where:{
-            user_id:req.user.user_id
-        }
-        })
-
-        if(!customer){
-        return res.status(404).json({
-            message:"Customer not found"
-        })
-        }
-
         const start = new Date(rent_date)
         const end = new Date(return_due_date)
+
         if(end <= start){
             return res.status(400).json({
                 message:"Return date must be after rent date"
             })
+        }
+
+        // 🔴 เช็คช่วงวันที่ชนกัน
+        const overlapRental = await prisma.rental.findFirst({
+            where:{
+                plate_id: car_id,
+                AND:[
+                    {
+                        rent_date:{
+                            lte:end
+                        }
+                    },
+                    {
+                        return_due_date:{
+                            gte:start
+                        }
+                    }
+                ]
             }
+        })
+
+        if(overlapRental){
+            return res.status(400).json({
+                message:"Car already booked for this period"
+            })
+        }
+
+        const customer = await prisma.customer.findUnique({
+            where:{
+                user_id:req.user.user_id
+            }
+        })
+
+        if(!customer){
+            return res.status(404).json({
+                message:"Customer not found"
+            })
+        }
 
         const diffTime = end - start
         const days = Math.ceil(diffTime / (1000*60*60*24))
 
         const deposit = Number(car.deposit)
-
         const rental_price = Number(car.price_per_day) * days
-
         const total_price = rental_price + deposit
 
         const rental = await prisma.rental.create({
