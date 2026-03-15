@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -22,7 +23,7 @@ model User {
 
   customer Customer?
 
-  @@map("user")
+  
 }
 
 enum CarStatus {
@@ -50,7 +51,7 @@ model Car {
 
   rentals Rental[]
 
-  @@map("car")
+  
 }
 
 model Car_type {
@@ -59,7 +60,7 @@ model Car_type {
 
   cars Car[]
 
-  @@map("car_type")
+  
 }
 
 model Customer {
@@ -76,7 +77,7 @@ model Customer {
 
   rentals Rental[]
 
-  @@map("customer")
+  
 }
 
 enum payChannel {
@@ -104,7 +105,7 @@ model Payment {
 
   rental Rental @relation(fields: [rent_id], references: [rent_id])
 
-  @@map("payment")
+  
 }
 
 enum rentStatus {
@@ -136,5 +137,5 @@ model Rental {
 
   payment Payment[]
 
-  @@map("rental")
+  
 }
