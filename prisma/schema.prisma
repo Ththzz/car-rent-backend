@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+model User {
+  user_id   Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(user)
+  create_at DateTime @default(now())  
+  updated_at DateTime @updatedAt
+  
+  customer Customer?
+}
+
+enum CarStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+}
+
+model Car {
+  plate_id String @id @db.VarChar(20)
+  brand         String
+  model         String
+  color         String
+  mileage       Int
+  price_per_day Decimal   @db.Decimal(10, 2)
+  deposit       Decimal    @db.Decimal(10, 2)
+  car_status    CarStatus @default(AVAILABLE)
+  car_image     String?
+  detail        String?
+  create_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  type_id Int
+  type    Car_type @relation(fields: [type_id], references: [type_id])
+
+  rentals Rental[]
+}
+
+model Car_type {
+  type_id   Int    @id @default(autoincrement())
+  type_name String
+
+  cars Car[]
+}
+
+model Customer {
+  cust_id     Int      @id @default(autoincrement())
+  cust_fname  String
+  cust_lname  String
+  cust_tel    String   @db.VarChar(20)
+  license_num String @db.VarChar(50)
+  create_at   DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_id Int      @unique
+  user    User     @relation(fields: [user_id], references: [user_id])
+  rentals Rental[]
+}
+
+enum payChannel {
+  cash
+  transfer
+  credit_card
+}
+
+enum payType {
+  deposit
+  rental_fee
+  late_fine
+  damage_fine
+}
+
+model Payment {
+  pay_id Int @id @default(autoincrement())
+
+  rent_id Int
+
+  pay_channel payChannel @default(transfer)
+  pay_type    payType    @default(deposit)
+  pay_amount  Decimal    @db.Decimal(10, 2)
+  pay_date    DateTime   @default(now())
+
+  rental Rental @relation(fields: [rent_id], references: [rent_id])
+}
+
+enum rentStatus {
+  pending
+  active
+  returned
+  cancelled
+}
+
+model Rental {
+  rent_id Int @id @default(autoincrement())
+
+  plate_id  String
+  cust_id Int
+
+  rent_date          DateTime
+  return_due_date    DateTime
+  actual_return_date DateTime?
+  pickup_place       String
+  deposit            Decimal    @db.Decimal(10, 2)
+  total_price        Decimal    @db.Decimal(10, 2)
+  fine               Int      @default(0)
+  rent_status        rentStatus @default(pending)
+  create_at          DateTime   @default(now())
+  updated_at         DateTime @updatedAt
+
+  car      Car      @relation(fields: [plate_id], references: [plate_id])
+  customer Customer @relation(fields: [cust_id], references: [cust_id])
+
+  payment Payment[]
+}
